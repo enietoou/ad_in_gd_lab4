@@ -40,156 +40,107 @@ NAND:
 -по скорости примерно как AND, с +-6 поколения перестаёт выдавать ошибки.
 XOR:
 <img width="1440" alt="image" src="https://github.com/enietoou/ad_in_gd_lab4/assets/74960429/3e4bfd66-5e85-4a61-b2ef-82e50420322b">
-
-
-
-
-Описание концепта:
-Elden Ring - это action RPG, разработанная компанией FromSoftware при участии писателя Хидетаки Миядзаки и писателя Джорджа Мартина. Игра предложит открытый мир, насыщенный опасностями и загадками, а также уникальную систему боя.
-
-Выбранная игровая переменная: Руны (внутриигровая валюта)
-
-Роль в игре:
-Руны в Elden Ring служат внутриигровой валютой, необходимой для приобретения нового снаряжения, улучшения оружия, покупки зелий и многого другого. Игроки могут зарабатывать руны, убивая врагов, выполняя задания и исследуя игровой мир.
-
-Условия изменения / появления и диапазон допустимых значений:
-Руны могут появляться при убийстве врагов, завершении квестов, а также в результате продажи предметов. Диапазон допустимых значений рун может быть, например, от 1 до 100 000, в зависимости от сложности задач и уровня врагов.
-
-Схема экономической модели:
-![Без имени-1](https://github.com/enietoou/ad_in_gd_lab2/assets/74960429/e14aefe4-cc9e-4be5-abf5-1b988148dc88)
-
+-перцептрон не смог обучиться, отсутствия ошибок не удаётся добиться.
 
 ## Задание 2
-
-С помощью скрипта на языке Python заполните google-таблицу данными, описывающими выбранную игровую переменную в выбранной игре (в качестве таких переменных может выступать игровая валюта, ресурсы, здоровье и т.д.). Средствами google-sheets визуализируйте данные в google-таблице (постройте график, диаграмму и пр.) для наглядного представления выбранной игровой величины.
-
-Ход работы:
-
--Настроить доступ к google-таблице по api, написать код генерации данных с помощью Python, используя gspread.
--Передать данные в таблицу, построить график и диаграмму, используя переданные данные.
-
-```py
-import gspread
-import numpy as np
-gc = gspread.service_account(filename='eng-node-405014-6823cc5359d6.json')
-sh = gc.open("Workshop2")
-runes_data = np.random.randint(100, 1000, 11)
-mon = list(range(1,11))
-i = 0
-while i <= len(mon):
-    i += 1
-    if i == 0:
-        continue
-    else:
-        tempInf = ((runes_data[i-1]-runes_data[i-2])/runes_data[i-2])*100
-        tempInf = str(tempInf)
-        tempInf = tempInf.replace('.',',')
-        sh.sheet1.update(('A' + str(i)), str(i))
-        sh.sheet1.update(('B' + str(i)), str(runes_data[i-1]))
-        sh.sheet1.update(('C' + str(i)), str(tempInf))
-        print(tempInf)
-```
-![image](https://github.com/enietoou/ad_in_gd_lab2/assets/74960429/d4582440-96ed-47e9-9f53-3f254039cf04)
+Построить графики зависимости количества эпох от ошибки обучения. Указать от чего зависит необходимое количество эпох обучения.
+-На основании полученных данных я построил таблицу и график:
+![image](https://github.com/enietoou/ad_in_gd_lab4/assets/74960429/e17764a6-8e9e-40a0-ba8e-68d72dd99aa2)
+-Выбор количества эпох завит от сложности задачи и уровня желаемой точности. Например для XOR количества эпох не хватаило и обучении закончилось с недостаточно точными весами, вследствии задача не была решена.
 
 ## Задание 3
-Настройте на сцене Unity воспроизведение звуковых файлов, описывающих динамику изменения выбранной переменной. Например, если выбрано здоровье главного персонажа вы можете выводить сообщения, связанные с его состоянием.
-- Написать скрипт для воспроизведения звуков, в зависимости от значения в таблице.
+Построить визуальную модель работы перцептрона на сцене Unity.
 ```c#
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
-using SimpleJSON;
+using UnityEngine.SceneManagement;
 
-public class NewBehaviourScript : MonoBehaviour
+public class Per_visual : MonoBehaviour
 {
-    public AudioClip goodSpeak;
-    public AudioClip normalSpeak;
-    public AudioClip badSpeak;
-    private AudioSource selectAudio;
-    private Dictionary<string,float> dataSet = new Dictionary<string, float>();
-    private bool statusStart = false;
-    private int i = 1;
+    private Renderer cubeRenderer;
+    [SerializeField] private int cubeFirst;
+    [SerializeField] private int cubeSecond;
 
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(GoogleSheets());
+        cubeRenderer = GetComponent<Renderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (dataSet["Mon_" + i.ToString()] <= 10 & statusStart == false & i != dataSet.Count)
-        {
-            StartCoroutine(PlaySelectAudioGood());
-            Debug.Log(dataSet["Mon_" + i.ToString()]);
-        }
-
-        if (dataSet["Mon_" + i.ToString()] > 10 & dataSet["Mon_" + i.ToString()] < 100 & statusStart == false & i != dataSet.Count)
-        {
-            StartCoroutine(PlaySelectAudioNormal());
-            Debug.Log(dataSet["Mon_" + i.ToString()]);
-        }
-
-        if (dataSet["Mon_" + i.ToString()] >= 100 & statusStart == false & i != dataSet.Count)
-        {
-            StartCoroutine(PlaySelectAudioBad());
-            Debug.Log(dataSet["Mon_" + i.ToString()]);
-        }
+        
     }
 
-    IEnumerator GoogleSheets()
+    private void OnTriggerEnter(Collider other)
     {
-        UnityWebRequest curentResp = UnityWebRequest.Get("https://sheets.googleapis.com/v4/spreadsheets/1phKoA08fmPVlKE2o7iZQhPN_IAmg5jgUCGOb9P-65bk/values/Лист1?key=AIzaSyAPmdysxqygxo359FknWrGquIVqohH5SNk");
-        yield return curentResp.SendWebRequest();
-        string rawResp = curentResp.downloadHandler.text;
-        var rawJson = JSON.Parse(rawResp);
-        foreach (var itemRawJson in rawJson["values"])
-        {
-            var parseJson = JSON.Parse(itemRawJson.ToString());
-            var selectRow = parseJson[0].AsStringList;
-            dataSet.Add(("Mon_" + selectRow[0]), float.Parse(selectRow[2]));
+        if (SceneManager.GetActiveScene().name == "OR") OR();
+        if (SceneManager.GetActiveScene().name == "AND") AND();
+        if (SceneManager.GetActiveScene().name == "NAND") NAND();
+        if (SceneManager.GetActiveScene().name == "XOR") XOR();
+        Destroy(other.gameObject);
+    }
+
+    private void OR() 
+    {
+        if (cubeFirst == 1 || cubeSecond == 1){
+            SetCubeColor(Color.white);
+        }
+        else {
+            SetCubeColor(Color.black);
+        }
+    }
+    private void AND() 
+    {
+        if (cubeFirst == 1 && cubeSecond == 1){
+            SetCubeColor(Color.white);
+        }
+        else {
+            SetCubeColor(Color.black);
+        }
+    }
+    private void NAND() 
+    {
+        if (!(cubeFirst == 1 && cubeSecond == 1)){
+            SetCubeColor(Color.white);
+        }
+        else {
+            SetCubeColor(Color.black);
+        }
+    }
+    private void XOR() 
+    {
+        if ((cubeFirst == 1 || cubeSecond == 1) && !(cubeFirst == 1 && cubeSecond == 1)){
+            SetCubeColor(Color.white);
+        }
+        else {
+            SetCubeColor(Color.black);
         }
     }
 
-    IEnumerator PlaySelectAudioGood()
+    void SetCubeColor(Color color)
     {
-        statusStart = true;
-        selectAudio = GetComponent<AudioSource>();
-        selectAudio.clip = goodSpeak;
-        selectAudio.Play();
-        yield return new WaitForSeconds(3);
-        statusStart = false;
-        i++;
+        cubeRenderer.material.color = color;
     }
-    IEnumerator PlaySelectAudioNormal()
-    {
-        statusStart = true;
-        selectAudio = GetComponent<AudioSource>();
-        selectAudio.clip = normalSpeak;
-        selectAudio.Play();
-        yield return new WaitForSeconds(3);
-        statusStart = false;
-        i++;
-    }
-    IEnumerator PlaySelectAudioBad()
-    {
-        statusStart = true;
-        selectAudio = GetComponent<AudioSource>();
-        selectAudio.clip = badSpeak;
-        selectAudio.Play();
-        yield return new WaitForSeconds(4);
-        statusStart = false;
-        i++;
-    }
+
 }
 ```
-<img width="1440" alt="image" src="https://github.com/enietoou/ad_in_gd_lab2/assets/74960429/8c5ff940-e2aa-4ec8-a4ba-79db27d49f89">
+Черный куб - 0, белый - 1, начальное положение для всех сцен:
+![image](https://github.com/enietoou/ad_in_gd_lab4/assets/74960429/175c80c5-191f-4d47-8346-cf877f735c72)
+Визуализация OR:
+![image](https://github.com/enietoou/ad_in_gd_lab4/assets/74960429/d3507d75-cbc0-477e-ba32-41a2122f83a6)
+Визуализация AND:
+![image](https://github.com/enietoou/ad_in_gd_lab4/assets/74960429/506a02ae-c57d-4757-8076-704fcc6bf1e2)
+Визуализация NAND:
+![image](https://github.com/enietoou/ad_in_gd_lab4/assets/74960429/db7a31bf-8a4b-4a01-8761-a056d56ac80a)
+Визуализация XOR:
+![image](https://github.com/enietoou/ad_in_gd_lab4/assets/74960429/615574de-a577-4465-a881-ec226c1355e4)
+
 
 ## Выводы
-
-В ходе данной лабораторной работы я овладел навыками визуализации данных из таблицы Google Sheets в Unity, освоил методы их представления, а также изучил работу со звуковыми эффектами в Unity с использованием скриптов на языках Python и C#. Мне удалось настроить условия воспроизведения звуков, а затем прослушать эти звуки в соответствии с данными из Google-таблицы, полученными при помощи скрипта на языке Python.
+В ходе выполнения лабораторной работы я изучил работу перцептронов и успешно реализовал их визуализацию в среде Unity.
 
 
 **BigDigital Team: Denisov | Fadeev | Panov**
